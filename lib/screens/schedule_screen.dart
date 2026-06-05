@@ -6,7 +6,7 @@ import '../data/notification_service.dart';
 import '../data/schedule_service.dart';
 import '../models/patient.dart';
 import '../models/schedule_item.dart';
-import '../sensing/med_sensing_service.dart';
+import '../sensing/sensing_foreground_controller.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 
@@ -49,9 +49,10 @@ class ScheduleScreen extends StatelessWidget {
                   // Keep the daily voice reminders in sync with the live
                   // schedule. syncSchedules no-ops when the set is unchanged.
                   context.read<NotificationService>().syncSchedules(items);
-                  // Feed the same live schedule to the YAMNet sensing engine so
-                  // it knows when to open meal/medication monitoring windows.
-                  context.read<MedSensingService>().setSchedule(items);
+                  // Feed the same live schedule to the YAMNet sensing engine
+                  // (running in the foreground-service isolate) so it knows when
+                  // to open meal/medication monitoring windows.
+                  context.read<SensingForegroundController>().pushSchedule(items);
                   if (items.isEmpty) return const _Empty();
                   return ListView.separated(
                     padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
@@ -86,7 +87,10 @@ class _Header extends StatelessWidget {
               const Spacer(),
               IconButton(
                 tooltip: '로그아웃',
-                onPressed: () {
+                onPressed: () async {
+                  // 상시 감지 서비스를 먼저 내린 뒤 알림 취소 + 로그아웃.
+                  await context.read<SensingForegroundController>().stop();
+                  if (!context.mounted) return;
                   context.read<NotificationService>().cancelAll();
                   context.read<AuthService>().signOut();
                 },

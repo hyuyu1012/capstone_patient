@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:provider/provider.dart';
 
 import 'data/auth_service.dart';
@@ -14,11 +15,13 @@ import 'screens/claim_screen.dart';
 import 'screens/onboarding/login_screen.dart';
 import 'screens/schedule_screen.dart';
 import 'sensing/med_sensing_binder.dart';
-import 'sensing/med_sensing_service.dart';
+import 'sensing/sensing_foreground_controller.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // 메인 isolate ↔ 감지 서비스 isolate 통신 포트(앱 시작 시 1회).
+  FlutterForegroundTask.initCommunicationPort();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final notifications = NotificationService();
   await notifications.init();
@@ -50,18 +53,23 @@ class PatientApp extends StatelessWidget {
         Provider<ScheduleService>(create: (_) => ScheduleService()),
         Provider<NotificationService>.value(value: notifications),
         Provider<TtsService>.value(value: tts),
-        // YAMNet sensing engine — one instance for the session. Lifecycle
-        // (init/start/stop) is driven by MedSensingBinder once a patient is known.
-        Provider<MedSensingService>(
-          create: (_) => MedSensingService(),
-          dispose: (_, s) => s.dispose(),
+        // YAMNet sensing engine runs in a foreground-service isolate so it keeps
+        // listening while the screen is off. This controller (main isolate side)
+        // drives its lifecycle/communication; MedSensingBinder starts it once a
+        // patient is known.
+        Provider<SensingForegroundController>(
+          create: (ctx) =>
+              SensingForegroundController(ctx.read<ScheduleService>()),
         ),
       ],
       child: MaterialApp(
         title: '안심 케어 — 환자',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
-        home: const _ReminderSpeaker(child: AuthGate()),
+        // WithForegroundTask keeps the service↔UI communication wired up.
+        home: WithForegroundTask(
+          child: const _ReminderSpeaker(child: AuthGate()),
+        ),
       ),
     );
   }

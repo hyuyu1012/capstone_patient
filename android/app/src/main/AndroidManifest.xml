@@ -9,10 +9,13 @@
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
 
     <!-- YAMNet sensing engine: record mic audio for medication/meal detection.
-         FOREGROUND_SERVICE(_MICROPHONE) reserved for future always-on monitoring. -->
+         The flutter_foreground_task service keeps the detection engine alive in a
+         microphone-typed foreground service so it runs while the screen is off. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
 
     <application
         android:label="capstone_patient"
@@ -63,6 +66,14 @@
                 <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
+
+        <!-- flutter_foreground_task: always-on YAMNet detection. The microphone
+             foregroundServiceType is required (Android 14+) to keep recording the
+             mic from the background. -->
+        <service
+            android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+            android:foregroundServiceType="microphone"
+            android:exported="false" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

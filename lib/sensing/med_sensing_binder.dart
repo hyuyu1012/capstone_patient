@@ -1,23 +1,26 @@
 // ─────────────────────────────────────────────────────────────
-// med_sensing_binder.dart  (2026-06-05 신규)
+// med_sensing_binder.dart  (2026-06-05 개편)
 //
-// MedSensingService를 앱에 "꽂는" 글루 위젯. patientId가 확정된 화면(스케줄
-// 화면) 위에 얹혀, 다음을 수행한다:
-//   - service.init()   : tflite 모델 로드 + 오디오 파이프라인 준비 (1회)
-//   - 콜백 연결          : onMedConfirmed/onUnknownMed/onMealEaten →
-//                         ScheduleService 쓰기(patientId 바인딩)
-//   - service.start()  : 스케줄 기반 감시 루프 + 가속도계 시작
-//   - dispose → stop() : 화면이 사라지면 감시 정지
+// YAMNet 감지 foreground service를 앱에 "꽂는" 글루 위젯. patientId가 확정된
+// 화면(스케줄 화면) 위에 얹혀, 다음을 수행한다:
+//   - controller.bind(patientId)          : 결과를 쓸 환자 문서 지정
+//   - addTaskDataCallback(controller.onData): 서비스 isolate → 메인 메시지를
+//                                            ScheduleService 쓰기로 연결
+//   - 권한 요청 → init → start             : 상주 알림 + 감지 서비스 시작
 //
-// 스케줄 입력(setSchedule)은 ScheduleScreen의 StreamBuilder에서 직접 넘긴다
-// (이미 흐르는 스트림을 한 갈래 더 보내는 것이므로 중복 구독을 만들지 않음).
+// [접근 A — 상시 유지] 감지는 서비스 isolate에서 돌므로, 이 위젯이 사라져도
+// (화면 전환/백그라운드) 서비스를 stop하지 않는다. 서비스 종료는 로그아웃 시
+// schedule_screen의 핸들러에서 controller.stop()으로만 수행한다.
+// (과거: dispose에서 service.stop() → 화면 벗어나면 감지가 죽던 동작을 제거)
+//
+// 스케줄 입력(pushSchedule)은 ScheduleScreen의 StreamBuilder에서 직접 넘긴다.
 // ─────────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:provider/provider.dart';
 
-import '../data/schedule_service.dart';
-import 'med_sensing_service.dart';
+import 'sensing_foreground_controller.dart';
 
 class MedSensingBinder extends StatefulWidget {
   const MedSensingBinder({
@@ -34,38 +37,34 @@ class MedSensingBinder extends StatefulWidget {
 }
 
 class _MedSensingBinderState extends State<MedSensingBinder> {
-  late final MedSensingService _service;
+  late final SensingForegroundController _controller;
+  late final void Function(Object) _onData;
 
   @override
   void initState() {
     super.initState();
-    _service = context.read<MedSensingService>();
-    final schedules = context.read<ScheduleService>();
-    final pid = widget.patientId;
+    _controller = context.read<SensingForegroundController>()
+      ..bind(widget.patientId);
 
-    // 콜백 → Firestore 쓰기 (patientId 바인딩)
-    _service.onMedConfirmed = (scheduleId, at) =>
-        schedules.setTaken(pid, scheduleId, takenAt: _hhmm(at));
-    _service.onMealEaten = (scheduleId, at) =>
-        schedules.setMeal(pid, scheduleId, eatenAt: _hhmm(at));
-    _service.onUnknownMed = (score, at) =>
-        schedules.addPendingMed(pid, takenAt: _hhmm(at), score: score);
+    // 서비스 isolate가 보내는 감지 결과 → Firestore 쓰기.
+    _onData = _controller.onData;
+    FlutterForegroundTask.addTaskDataCallback(_onData);
 
-    // 모델 로드(비동기) 완료 후 감시 시작. (start 전에 streamer.init 필요)
-    _service.init().then((_) {
-      if (mounted) _service.start();
+    // 권한(알림+배터리 예외) 요청 후 서비스 시작. context를 쓰는 권한 다이얼로그가
+    // 첫 프레임 이후에 뜨도록 postFrame에서 실행.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _controller.requestPermissions();
+      _controller.init();
+      await _controller.start();
     });
   }
 
   @override
   void dispose() {
-    _service.stop();
+    // 콜백만 해제. 서비스는 상시 유지(로그아웃 시 schedule_screen에서 stop).
+    FlutterForegroundTask.removeTaskDataCallback(_onData);
     super.dispose();
   }
-
-  /// "HH:mm" (UI takenAt 포맷과 동일).
-  static String _hhmm(DateTime t) =>
-      '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 
   @override
   Widget build(BuildContext context) => widget.child;

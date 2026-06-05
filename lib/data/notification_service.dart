@@ -154,7 +154,7 @@ class NotificationService {
       _nextInstanceOf(item.time),
       details,
       payload: encodePayload(item),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.alarmClock,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       // Repeat every day at the same wall-clock time.
