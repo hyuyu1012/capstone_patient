@@ -1,0 +1,200 @@
+V/NativeCrypto( 5543): Read error: ssl=0xb4000078e6d93848: I/O error during system call, Software caused connection abort
+V/NativeCrypto( 5543): Write error: ssl=0xb4000078e6d93848: I/O error during system call, Broken pipe
+W/ManagedChannelImpl( 5543): [{0}] Failed to resolve name. status={1}
+W/Firestore( 5543): (25.1.4) [WatchStream]: (dd859e1) Stream closed with status: Status{code=UNAVAILABLE, description=End of stream or IOException, cause=null}.
+V/NativeCrypto( 5543): SSL shutdown failed: ssl=0xb4000078e6d93848: I/O error during system call, Success
+W/Firestore( 5543): (25.1.4) [WatchStream]: (dd859e1) Stream closed with status: Status{code=UNAVAILABLE, description=Unable to resolve host firestore.googleapis.com, cause=java.lang.RuntimeException: java.net.UnknownHostException: Unable to resolve host "firestore.googleapis.com": No address associated with hostname
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.resolveAddresses(DnsNameResolver.java:223)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.doResolve(DnsNameResolver.java:282)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver$Resolve.run(DnsNameResolver.java:318)
+W/Firestore( 5543): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+W/Firestore( 5543): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+W/Firestore( 5543): 	at java.lang.Thread.run(Thread.java:1564)
+W/Firestore( 5543): Caused by: java.net.UnknownHostException: Unable to resolve host "firestore.googleapis.com": No address associated with hostname
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupHostByName(Inet6AddressImpl.java:156)
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupAllHostAddr(Inet6AddressImpl.java:103)
+W/Firestore( 5543): 	at java.net.InetAddress.getAllByName(InetAddress.java:1152)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver$JdkAddressResolver.resolveAddress(DnsNameResolver.java:632)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.resolveAddresses(DnsNameResolver.java:219)
+W/Firestore( 5543): 	... 5 more
+W/Firestore( 5543): Caused by: android.system.GaiException: android_getaddrinfo failed: EAI_NODATA (No address associated with hostname)
+W/Firestore( 5543): 	at libcore.io.Linux.android_getaddrinfo(Native Method)
+W/Firestore( 5543): 	at libcore.io.ForwardingOs.android_getaddrinfo(ForwardingOs.java:134)
+W/Firestore( 5543): 	at libcore.io.BlockGuardOs.android_getaddrinfo(BlockGuardOs.java:222)
+W/Firestore( 5543): 	at libcore.io.ForwardingOs.android_getaddrinfo(ForwardingOs.java:134)
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupHostByName(Inet6AddressImpl.java:135)
+W/Firestore( 5543): 	... 9 more
+W/Firestore( 5543): }.
+I/apstone_patient( 5543): Background concurrent mark compact GC freed 21MB AllocSpace bytes, 0(0B) LOS objects, 77% free, 7200KB/31MB, paused 685us,5.798ms total 86.930ms
+D/DeviceStateManagerGlobal( 5543): handleDeviceStateInfoChanged state=DeviceState{identifier=2, name='HALF_OPENED', app_accessible=true, cancel_when_requester_not_on_top=false}, baseState=DeviceState{identifier=2, name='HALF_OPENED', app_accessible=true, cancel_when_requester_not_on_top=false}
+I/apstone_patient( 5543): Background young concurrent mark compact GC freed 24MB AllocSpace bytes, 1(20KB) LOS objects, 78% free, 6956KB/31MB, paused 580us,5.964ms total 65.045ms
+D/FlutterJNI( 5543): Sending viewport metrics to the engine.
+W/Firestore( 5543): (25.1.4) [WatchStream]: (dd859e1) Stream closed with status: Status{code=UNAVAILABLE, description=Unable to resolve host firestore.googleapis.com, cause=java.lang.RuntimeException: java.net.UnknownHostException: Unable to resolve host "firestore.googleapis.com": No address associated with hostname
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.resolveAddresses(DnsNameResolver.java:223)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.doResolve(DnsNameResolver.java:282)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver$Resolve.run(DnsNameResolver.java:318)
+W/Firestore( 5543): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+W/Firestore( 5543): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+W/Firestore( 5543): 	at java.lang.Thread.run(Thread.java:1564)
+W/Firestore( 5543): Caused by: java.net.UnknownHostException: Unable to resolve host "firestore.googleapis.com": No address associated with hostname
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupHostByName(Inet6AddressImpl.java:156)
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupAllHostAddr(Inet6AddressImpl.java:103)
+W/Firestore( 5543): 	at java.net.InetAddress.getAllByName(InetAddress.java:1152)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver$JdkAddressResolver.resolveAddress(DnsNameResolver.java:632)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.resolveAddresses(DnsNameResolver.java:219)
+W/Firestore( 5543): 	... 5 more
+W/Firestore( 5543): Caused by: android.system.GaiException: android_getaddrinfo failed: EAI_NODATA (No address associated with hostname)
+W/Firestore( 5543): 	at libcore.io.Linux.android_getaddrinfo(Native Method)
+W/Firestore( 5543): 	at libcore.io.ForwardingOs.android_getaddrinfo(ForwardingOs.java:134)
+W/Firestore( 5543): 	at libcore.io.BlockGuardOs.android_getaddrinfo(BlockGuardOs.java:222)
+W/Firestore( 5543): 	at libcore.io.ForwardingOs.android_getaddrinfo(ForwardingOs.java:134)
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupHostByName(Inet6AddressImpl.java:135)
+W/Firestore( 5543): 	... 9 more
+W/Firestore( 5543): }.
+W/ManagedChannelImpl( 5543): [{0}] Failed to resolve name. status={1}
+D/DeviceStateManagerGlobal( 5543): handleDeviceStateInfoChanged state=DeviceState{identifier=0, name='CLOSED', app_accessible=false, cancel_when_requester_not_on_top=false}, baseState=DeviceState{identifier=0, name='CLOSED', app_accessible=false, cancel_when_requester_not_on_top=false}
+I/apstone_patient( 5543): Background concurrent mark compact GC freed 28MB AllocSpace bytes, 0(0B) LOS objects, 79% free, 6341KB/30MB, paused 863us,5.075ms total 75.546ms
+D/FlutterJNI( 5543): Sending viewport metrics to the engine.
+I/apstone_patient( 5543): Background concurrent mark compact GC freed 23MB AllocSpace bytes, 0(0B) LOS objects, 73% free, 8683KB/32MB, paused 745us,5.594ms total 68.510ms
+W/ManagedChannelImpl( 5543): [{0}] Failed to resolve name. status={1}
+W/Firestore( 5543): (25.1.4) [WatchStream]: (dd859e1) Stream closed with status: Status{code=UNAVAILABLE, description=Unable to resolve host firestore.googleapis.com, cause=java.lang.RuntimeException: java.net.UnknownHostException: Unable to resolve host "firestore.googleapis.com": No address associated with hostname
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.resolveAddresses(DnsNameResolver.java:223)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.doResolve(DnsNameResolver.java:282)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver$Resolve.run(DnsNameResolver.java:318)
+W/Firestore( 5543): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+W/Firestore( 5543): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+W/Firestore( 5543): 	at java.lang.Thread.run(Thread.java:1564)
+W/Firestore( 5543): Caused by: java.net.UnknownHostException: Unable to resolve host "firestore.googleapis.com": No address associated with hostname
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupHostByName(Inet6AddressImpl.java:156)
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupAllHostAddr(Inet6AddressImpl.java:103)
+W/Firestore( 5543): 	at java.net.InetAddress.getAllByName(InetAddress.java:1152)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver$JdkAddressResolver.resolveAddress(DnsNameResolver.java:632)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.resolveAddresses(DnsNameResolver.java:219)
+W/Firestore( 5543): 	... 5 more
+W/Firestore( 5543): Caused by: android.system.GaiException: android_getaddrinfo failed: EAI_NODATA (No address associated with hostname)
+W/Firestore( 5543): 	at libcore.io.Linux.android_getaddrinfo(Native Method)
+W/Firestore( 5543): 	at libcore.io.ForwardingOs.android_getaddrinfo(ForwardingOs.java:134)
+W/Firestore( 5543): 	at libcore.io.BlockGuardOs.android_getaddrinfo(BlockGuardOs.java:222)
+W/Firestore( 5543): 	at libcore.io.ForwardingOs.android_getaddrinfo(ForwardingOs.java:134)
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupHostByName(Inet6AddressImpl.java:135)
+W/Firestore( 5543): 	... 9 more
+W/Firestore( 5543): }.
+I/apstone_patient( 5543): Background young concurrent mark compact GC freed 23MB AllocSpace bytes, 0(0B) LOS objects, 75% free, 8368KB/32MB, paused 638us,5.358ms total 43.500ms
+I/apstone_patient( 5543): Background concurrent mark compact GC freed 26MB AllocSpace bytes, 1(20KB) LOS objects, 71% free, 9781KB/33MB, paused 820us,5.863ms total 78.744ms
+I/apstone_patient( 5543): Background young concurrent mark compact GC freed 23MB AllocSpace bytes, 0(0B) LOS objects, 72% free, 9381KB/33MB, paused 809us,5.752ms total 47.509ms
+I/apstone_patient( 5543): Background concurrent mark compact GC freed 25MB AllocSpace bytes, 0(0B) LOS objects, 70% free, 10MB/34MB, paused 790us,5.612ms total 76.463ms
+I/apstone_patient( 5543): Background young concurrent mark compact GC freed 23MB AllocSpace bytes, 0(0B) LOS objects, 73% free, 9396KB/34MB, paused 741us,5.508ms total 41.845ms
+W/Firestore( 5543): (25.1.4) [WatchStream]: (dd859e1) Stream closed with status: Status{code=UNAVAILABLE, description=Unable to resolve host firestore.googleapis.com, cause=java.lang.RuntimeException: java.net.UnknownHostException: Unable to resolve host "firestore.googleapis.com": No address associated with hostname
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.resolveAddresses(DnsNameResolver.java:223)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.doResolve(DnsNameResolver.java:282)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver$Resolve.run(DnsNameResolver.java:318)
+W/Firestore( 5543): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+W/Firestore( 5543): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+W/Firestore( 5543): 	at java.lang.Thread.run(Thread.java:1564)
+W/Firestore( 5543): Caused by: java.net.UnknownHostException: Unable to resolve host "firestore.googleapis.com": No address associated with hostname
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupHostByName(Inet6AddressImpl.java:156)
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupAllHostAddr(Inet6AddressImpl.java:103)
+W/Firestore( 5543): 	at java.net.InetAddress.getAllByName(InetAddress.java:1152)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver$JdkAddressResolver.resolveAddress(DnsNameResolver.java:632)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.resolveAddresses(DnsNameResolver.java:219)
+W/Firestore( 5543): 	... 5 more
+W/Firestore( 5543): Caused by: android.system.GaiException: android_getaddrinfo failed: EAI_NODATA (No address associated with hostname)
+W/Firestore( 5543): 	at libcore.io.Linux.android_getaddrinfo(Native Method)
+W/Firestore( 5543): 	at libcore.io.ForwardingOs.android_getaddrinfo(ForwardingOs.java:134)
+W/Firestore( 5543): 	at libcore.io.BlockGuardOs.android_getaddrinfo(BlockGuardOs.java:222)
+W/Firestore( 5543): 	at libcore.io.ForwardingOs.android_getaddrinfo(ForwardingOs.java:134)
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupHostByName(Inet6AddressImpl.java:135)
+W/Firestore( 5543): 	... 9 more
+W/Firestore( 5543): }.
+W/ManagedChannelImpl( 5543): [{0}] Failed to resolve name. status={1}
+I/apstone_patient( 5543): Background concurrent mark compact GC freed 26MB AllocSpace bytes, 0(0B) LOS objects, 72% free, 9272KB/33MB, paused 615us,5.717ms total 76.268ms
+I/apstone_patient( 5543): Background young concurrent mark compact GC freed 23MB AllocSpace bytes, 0(0B) LOS objects, 72% free, 9193KB/32MB, paused 624us,5.447ms total 40.511ms
+I/apstone_patient( 5543): Background concurrent mark compact GC freed 24MB AllocSpace bytes, 0(0B) LOS objects, 69% free, 10MB/34MB, paused 829us,5.049ms total 73.459ms
+I/apstone_patient( 5543): Background concurrent mark compact GC freed 26MB AllocSpace bytes, 0(0B) LOS objects, 81% free, 5676KB/29MB, paused 715us,5.186ms total 81.226ms
+I/apstone_patient( 5543): Background young concurrent mark compact GC freed 23MB AllocSpace bytes, 0(0B) LOS objects, 76% free, 8032KB/32MB, paused 670us,5.665ms total 40.597ms
+I/apstone_patient( 5543): Background concurrent mark compact GC freed 26MB AllocSpace bytes, 1(20KB) LOS objects, 73% free, 8933KB/32MB, paused 1.564ms,5.872ms total 78.503ms
+I/apstone_patient( 5543): Background young concurrent mark compact GC freed 23MB AllocSpace bytes, 0(0B) LOS objects, 72% free, 9056KB/32MB, paused 557us,5.954ms total 40.034ms
+W/ManagedChannelImpl( 5543): [{0}] Failed to resolve name. status={1}
+I/apstone_patient( 5543): Background concurrent mark compact GC freed 26MB AllocSpace bytes, 0(0B) LOS objects, 71% free, 9828KB/33MB, paused 1.413ms,5.682ms total 80.152ms
+W/Firestore( 5543): (25.1.4) [WatchStream]: (dd859e1) Stream closed with status: Status{code=UNAVAILABLE, description=Unable to resolve host firestore.googleapis.com, cause=java.lang.RuntimeException: java.net.UnknownHostException: Unable to resolve host "firestore.googleapis.com": No address associated with hostname
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.resolveAddresses(DnsNameResolver.java:223)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.doResolve(DnsNameResolver.java:282)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver$Resolve.run(DnsNameResolver.java:318)
+W/Firestore( 5543): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+W/Firestore( 5543): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+W/Firestore( 5543): 	at java.lang.Thread.run(Thread.java:1564)
+W/Firestore( 5543): Caused by: java.net.UnknownHostException: Unable to resolve host "firestore.googleapis.com": No address associated with hostname
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupHostByName(Inet6AddressImpl.java:156)
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupAllHostAddr(Inet6AddressImpl.java:103)
+W/Firestore( 5543): 	at java.net.InetAddress.getAllByName(InetAddress.java:1152)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver$JdkAddressResolver.resolveAddress(DnsNameResolver.java:632)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.resolveAddresses(DnsNameResolver.java:219)
+W/Firestore( 5543): 	... 5 more
+W/Firestore( 5543): Caused by: android.system.GaiException: android_getaddrinfo failed: EAI_NODATA (No address associated with hostname)
+W/Firestore( 5543): 	at libcore.io.Linux.android_getaddrinfo(Native Method)
+W/Firestore( 5543): 	at libcore.io.ForwardingOs.android_getaddrinfo(ForwardingOs.java:134)
+W/Firestore( 5543): 	at libcore.io.BlockGuardOs.android_getaddrinfo(BlockGuardOs.java:222)
+W/Firestore( 5543): 	at libcore.io.ForwardingOs.android_getaddrinfo(ForwardingOs.java:134)
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupHostByName(Inet6AddressImpl.java:135)
+W/Firestore( 5543): 	... 9 more
+W/Firestore( 5543): }.
+I/apstone_patient( 5543): Background concurrent mark compact GC freed 25MB AllocSpace bytes, 0(0B) LOS objects, 69% free, 10MB/34MB, paused 1.033ms,5.778ms total 72.882ms
+I/apstone_patient( 5543): Background concurrent mark compact GC freed 26MB AllocSpace bytes, 0(0B) LOS objects, 70% free, 10097KB/33MB, paused 706us,5.165ms total 77.805ms
+I/apstone_patient( 5543): Background concurrent mark compact GC freed 21MB AllocSpace bytes, 0(0B) LOS objects, 73% free, 8720KB/32MB, paused 1.128ms,6.592ms total 76.626ms
+I/apstone_patient( 5543): Background concurrent mark compact GC freed 28MB AllocSpace bytes, 1(20KB) LOS objects, 71% free, 9812KB/33MB, paused 934us,5.882ms total 86.298ms
+W/Firestore( 5543): (25.1.4) [WatchStream]: (dd859e1) Stream closed with status: Status{code=UNAVAILABLE, description=Unable to resolve host firestore.googleapis.com, cause=java.lang.RuntimeException: java.net.UnknownHostException: Unable to resolve host "firestore.googleapis.com": No address associated with hostname
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.resolveAddresses(DnsNameResolver.java:223)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.doResolve(DnsNameResolver.java:282)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver$Resolve.run(DnsNameResolver.java:318)
+W/Firestore( 5543): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+W/Firestore( 5543): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+W/Firestore( 5543): 	at java.lang.Thread.run(Thread.java:1564)
+W/Firestore( 5543): Caused by: java.net.UnknownHostException: Unable to resolve host "firestore.googleapis.com": No address associated with hostname
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupHostByName(Inet6AddressImpl.java:156)
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupAllHostAddr(Inet6AddressImpl.java:103)
+W/Firestore( 5543): 	at java.net.InetAddress.getAllByName(InetAddress.java:1152)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver$JdkAddressResolver.resolveAddress(DnsNameResolver.java:632)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.resolveAddresses(DnsNameResolver.java:219)
+W/Firestore( 5543): 	... 5 more
+W/Firestore( 5543): Caused by: android.system.GaiException: android_getaddrinfo failed: EAI_NODATA (No address associated with hostname)
+W/Firestore( 5543): 	at libcore.io.Linux.android_getaddrinfo(Native Method)
+W/Firestore( 5543): 	at libcore.io.ForwardingOs.android_getaddrinfo(ForwardingOs.java:134)
+W/Firestore( 5543): 	at libcore.io.BlockGuardOs.android_getaddrinfo(BlockGuardOs.java:222)
+W/Firestore( 5543): 	at libcore.io.ForwardingOs.android_getaddrinfo(ForwardingOs.java:134)
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupHostByName(Inet6AddressImpl.java:135)
+W/Firestore( 5543): 	... 9 more
+W/Firestore( 5543): }.
+W/ManagedChannelImpl( 5543): [{0}] Failed to resolve name. status={1}
+I/apstone_patient( 5543): Background concurrent mark compact GC freed 27MB AllocSpace bytes, 0(0B) LOS objects, 70% free, 10MB/34MB, paused 723us,5.198ms total 70.609ms
+I/apstone_patient( 5543): Background concurrent mark compact GC freed 25MB AllocSpace bytes, 1(20KB) LOS objects, 74% free, 8380KB/32MB, paused 690us,6.654ms total 81.132ms
+I/apstone_patient( 5543): Background concurrent mark compact GC freed 26MB AllocSpace bytes, 0(0B) LOS objects, 68% free, 11MB/35MB, paused 684us,5.013ms total 75.133ms
+I/apstone_patient( 5543): Background concurrent mark compact GC freed 25MB AllocSpace bytes, 0(0B) LOS objects, 69% free, 10MB/34MB, paused 673us,5.559ms total 72.395ms
+I/apstone_patient( 5543): Background young concurrent mark compact GC freed 24MB AllocSpace bytes, 0(0B) LOS objects, 72% free, 9672KB/34MB, paused 600us,5.045ms total 41.195ms
+I/apstone_patient( 5543): Waiting for a blocking GC ProfileSaver
+I/apstone_patient( 5543): Background concurrent mark compact GC freed 26MB AllocSpace bytes, 0(0B) LOS objects, 69% free, 10MB/34MB, paused 684us,5.030ms total 78.271ms
+I/apstone_patient( 5543): WaitForGcToComplete blocked ProfileSaver on Background for 69.682ms
+I/apstone_patient( 5543): Background concurrent mark compact GC freed 22MB AllocSpace bytes, 0(0B) LOS objects, 74% free, 8332KB/32MB, paused 903us,5.350ms total 68.865ms
+W/Firestore( 5543): (25.1.4) [WatchStream]: (dd859e1) Stream closed with status: Status{code=UNAVAILABLE, description=Unable to resolve host firestore.googleapis.com, cause=java.lang.RuntimeException: java.net.UnknownHostException: Unable to resolve host "firestore.googleapis.com": No address associated with hostname
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.resolveAddresses(DnsNameResolver.java:223)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.doResolve(DnsNameResolver.java:282)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver$Resolve.run(DnsNameResolver.java:318)
+W/Firestore( 5543): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
+W/Firestore( 5543): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
+W/Firestore( 5543): 	at java.lang.Thread.run(Thread.java:1564)
+W/Firestore( 5543): Caused by: java.net.UnknownHostException: Unable to resolve host "firestore.googleapis.com": No address associated with hostname
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupHostByName(Inet6AddressImpl.java:156)
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupAllHostAddr(Inet6AddressImpl.java:103)
+W/Firestore( 5543): 	at java.net.InetAddress.getAllByName(InetAddress.java:1152)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver$JdkAddressResolver.resolveAddress(DnsNameResolver.java:632)
+W/Firestore( 5543): 	at io.grpc.internal.DnsNameResolver.resolveAddresses(DnsNameResolver.java:219)
+W/Firestore( 5543): 	... 5 more
+W/Firestore( 5543): Caused by: android.system.GaiException: android_getaddrinfo failed: EAI_NODATA (No address associated with hostname)
+W/Firestore( 5543): 	at libcore.io.Linux.android_getaddrinfo(Native Method)
+W/Firestore( 5543): 	at libcore.io.ForwardingOs.android_getaddrinfo(ForwardingOs.java:134)
+W/Firestore( 5543): 	at libcore.io.BlockGuardOs.android_getaddrinfo(BlockGuardOs.java:222)
+W/Firestore( 5543): 	at libcore.io.ForwardingOs.android_getaddrinfo(ForwardingOs.java:134)
+W/Firestore( 5543): 	at java.net.Inet6AddressImpl.lookupHostByName(Inet6AddressImpl.java:135)
+W/Firestore( 5543): 	... 9 more
+W/Firestore( 5543): }.
+W/ManagedChannelImpl( 5543): [{0}] Failed to resolve name. status={1}
+
