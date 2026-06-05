@@ -1,4 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Firebase/Firestore network access. Release builds need this declared
+         explicitly; debug/profile builds get it auto-injected by Flutter, which
+         is why release APKs couldn't reach firestore.googleapis.com. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <!-- flutter_local_notifications: post + schedule exact, time-precise reminders. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
