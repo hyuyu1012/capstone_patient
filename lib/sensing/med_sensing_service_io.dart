@@ -175,7 +175,11 @@ class MedSensingService {
   }
 
   Future<bool> _ensureMicPermission() async {
-    final status = await Permission.microphone.request();
+    // 이 서비스는 Activity 없는 서비스 isolate에서 돈다. Permission.request()는
+    // 권한 다이얼로그를 띄우려 Activity를 찾다가 플랫폼 채널에서 throw한다
+    // (docs/log2.md). 실제 요청은 메인(UI) isolate의 requestPermissions()가
+    // 이미 끝냈으므로, 여기선 Activity가 필요 없는 status 조회만 한다.
+    final status = await Permission.microphone.status;
     _micPermissionDenied = !status.isGranted;
     return status.isGranted;
   }
