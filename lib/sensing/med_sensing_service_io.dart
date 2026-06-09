@@ -19,6 +19,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
@@ -222,16 +223,27 @@ class MedSensingService {
     //    청크에서만 CNN 추론을 돌린다. IIR이 못 잡으면 CNN 추론 자체를 생략.
     if (event.detected) {
       final cnnScore = _swallow.inferLatest();
+      debugPrint('[SENSE] iir-hit → cnn=${cnnScore.toStringAsFixed(2)}');
       if (cnnScore >= kCnnSwallowThreshold) {
         _scorer.addSwallowDetection(confidence: cnnScore);
       }
     }
+
+    // [디버그 로그, 2026-06-09] 파이프라인 가시화 — 청크당 1줄(초당 ~1회).
+    // 튜닝/검증이 끝나면 제거. logcat에서 `[SENSE]`로 필터.
+    debugPrint('[SENSE] ${_decision.phase.name}'
+        '${_decision.targetId != null ? "(${_decision.targetId})" : ""}'
+        ' chew=${cScore.toStringAsFixed(2)}${chewing ? "✓" : ""}'
+        ' iir=${event.detected ? "Y" : "n"}'
+        ' meal=${_meal.status.name}'
+        ' score=${_scorer.currentScore}');
 
     _emit();
   }
 
   // ── 식사 완료 → 식후약 P2 트리거 + 상위 기록 콜백 ──
   void _onMealEaten(String mealId, DateTime at) {
+    debugPrint('[SENSE] 🍽 MEAL EATEN: $mealId @ $at');
     _controller.notifyMealCompleted(mealId, at); // 식후약(after) P2 창을 연다
     onMealEaten?.call(mealId, at); // Firestore: meal taken/mealStatus
   }
@@ -243,6 +255,7 @@ class MedSensingService {
       case MedPhase.p2:
         final id = _decision.targetId;
         if (id != null) {
+          debugPrint('[SENSE] 💊 MED CONFIRMED: $id (score=${r.score})');
           _controller.notifyMedTaken(id); // 복용 확정 → 그 약 감시 창 즉시 종료
           onMedConfirmed?.call(id, at);
         }
