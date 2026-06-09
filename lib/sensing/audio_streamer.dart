@@ -36,7 +36,13 @@ class AudioStreamer {
   /// 호출 가능 — "Recorder is not open" 방지.
   Future<void> _ensureOpen() async {
     if (_isOpen) return;
-    await _recorder.openRecorder();
+    // 이 레코더는 Activity 없는 flutter_foreground_task 서비스 isolate에서 열린다.
+    // flutter_sound의 recorder 채널(xyz.canardoux.flutter_sound_recorder)은
+    // onAttachedToActivity에서만 등록되므로, Activity가 없으면 openRecorder가
+    // MissingPluginException으로 죽는다(docs/log4.md). isBGService:true는 먼저
+    // bgservice 채널의 setBGService를 호출해 Activity 없이 recorder 채널을
+    // 등록(attachFlauto)시킨 뒤 세션을 연다 — flutter_sound의 백그라운드 경로.
+    await _recorder.openRecorder(isBGService: true);
     _isOpen = true;
   }
 

@@ -135,9 +135,14 @@ class MedSensingService {
     if (d.phase == MedPhase.p1 && prev.phase != MedPhase.p1) {
       _meal.reset(); // 식사 창 진입 → 새 식사 세션 시작
     } else if (prev.phase == MedPhase.p1 && d.phase != MedPhase.p1) {
-      // 식사 창 이탈 → 식사 중이었으면 eaten으로 마무리(3분 무음 못 채운 경우)
-      if (_meal.finalizeOnExit() && prev.targetId != null) {
-        _onMealEaten(prev.targetId!, DateTime.now());
+      // 식사 창 이탈 → 식사 중이었으면 eaten으로 마무리(무음/시간 못 채운 안전망).
+      // 단, 그 식사가 삭제·스킵되어 목록에서 빠진 경우엔 마무리하지 않는다
+      // (스킵/삭제를 '먹음'으로 오기록 + 식후약 창 오픈하는 것 방지).
+      final prevId = prev.targetId;
+      if (prevId != null &&
+          _controller.hasMeal(prevId) &&
+          _meal.finalizeOnExit()) {
+        _onMealEaten(prevId, DateTime.now());
       }
     }
 

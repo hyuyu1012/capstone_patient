@@ -139,6 +139,12 @@ class MedPhaseController {
   MedPhaseDecision _current = MedPhaseDecision.idle;
   MedPhaseDecision get current => _current;
 
+  /// 해당 식사가 아직 유효한 감시 대상인가(목록에 있고 스킵 아님). 식사 창을
+  /// 벗어날 때 '시간 종료'와 '삭제/스킵으로 빠짐'을 구분하는 데 쓴다 —
+  /// 후자라면 eaten으로 마무리하면 안 된다.
+  bool hasMeal(String mealId) =>
+      _meals.any((m) => m.id == mealId && !m.skipped);
+
   // ── 입력 1: 스케줄 갱신 (ScheduleService 스트림에서) ──────────
   void setSchedule(List<ScheduleItem> items) {
     _meals = items.where((i) => i.kind == ScheduleKind.meal).toList();
