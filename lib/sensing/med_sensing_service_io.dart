@@ -9,11 +9,11 @@
 //   MedPhaseController ─ onChanged ─▶ scorer.setPhase() + 마이크 start/stop
 //   AudioStreamer ─ onChunk ─▶ Yamnet · Drink · Swallow ─▶ MedicationScorer
 //   가속도계 ─▶ scorer.updateAccelerometer
-//   scorer.onTrigger(80점↑) ─▶ p2: onMedConfirmed / gap: onUnknownMed
+//   scorer.onTrigger(80점↑) ─▶ p2: onMedConfirmed
 //   식사 상태머신(eaten) ─▶ onMealEaten + controller.notifyMealCompleted
 //
 // Firestore는 모른다(콜백으로만 결과 전달). 마이크 정책=(1) 예정시간 근처만:
-// controller.micActive를 그대로 따라 켜고 끈다(p1→gap→p2는 연속 유지).
+// controller.micActive를 그대로 따라 켜고 끈다(p1→p2는 연속 유지).
 // ─────────────────────────────────────────────────────────────
 
 import 'dart:async';
@@ -42,7 +42,9 @@ class MedSensingService {
   /// 채우므로 final이 아니다.
   void Function(String scheduleId, DateTime at)? onMedConfirmed;
 
-  /// gap 트리거 → 어느 약인지 미정. (점수, 시각) → 상위에서 pendingMeds 처리.
+  /// 어느 약인지 미정인 복약 트리거. (점수, 시각) → 상위에서 pendingMeds 처리.
+  /// [2026-06-09] gap(공백기) 단계를 제거하면서 현재 이 콜백을 발생시키는 경로가
+  ///   없다(휴면). pendingMeds 배선은 유지하되, 호출자가 다시 생기기 전까지 미사용.
   void Function(int score, DateTime at)? onUnknownMed;
 
   /// 식사 완료 감지. (mealId, 완료 시각) → 상위에서 meal taken/mealStatus 기록.
@@ -80,7 +82,13 @@ class MedSensingService {
   // ── 초기화: 모델 로드 + 오디오 파이프라인 연결 ──
   Future<void> init() async {
     _scorer = MedicationScorer(onTrigger: _onScorerTrigger);
-    _controller = MedPhaseController(onChanged: _onPhaseChanged);
+    // [2026-06-09] 식후약은 "식사완료" 이벤트로 P2 창을 연다(afterMedUsesMealEvent).
+    // 연결된 식사가 +90분(kMealMaxDuration) 안에 감지되면 그 시점부터 창을 열고,
+    // 끝내 감지 못 하면 창을 열지 않는다(폴백 없음). 식전/식사무관은 약 time 시계.
+    _controller = MedPhaseController(
+      onChanged: _onPhaseChanged,
+      afterMedUsesMealEvent: true,
+    );
     await _classifier.loadModel();
     await _swallow.init('assets/ml/swallow_classifier.tflite');
     await _streamer.init();
@@ -184,8 +192,8 @@ class MedSensingService {
     final cScore = _classifier.chewingScore(all);
     final event = _drink.process(chunk);
 
-    _swallow.feedFloat32(chunk);
-    final cnnScore = _swallow.lastScore;
+    // CNN 버퍼는 매 청크 누적해 연속성 유지(추론은 아래 IIR 게이트 통과 시에만).
+    _swallow.pushAudio(chunk);
 
     // 0) M_chew (음식 오탐 negative signal) 먼저 반영
     final chewing = cScore >= chewingThreshold;
@@ -204,10 +212,14 @@ class MedSensingService {
     for (final r in indexed) {
       _scorer.addYamnetResult(r.index, r.score);
     }
-    // 2) 꿀꺽: CNN과 IIR이 같은 chunk에서 모두 감지될 때만 swallow 반영
-    final swallowDetected = cnnScore >= kCnnSwallowThreshold && event.detected;
-    if (swallowDetected) {
-      _scorer.addSwallowDetection(confidence: cnnScore);
+    // 2) 꿀꺽 (직렬 cascade, 2026-06-09):
+    //    IIR(밴드패스+기침/말소리/충격음 차단)을 1차 게이트로 두고, 후보를 잡은
+    //    청크에서만 CNN 추론을 돌린다. IIR이 못 잡으면 CNN 추론 자체를 생략.
+    if (event.detected) {
+      final cnnScore = _swallow.inferLatest();
+      if (cnnScore >= kCnnSwallowThreshold) {
+        _scorer.addSwallowDetection(confidence: cnnScore);
+      }
     }
 
     _emit();
@@ -225,10 +237,10 @@ class MedSensingService {
     switch (r.phase) {
       case MedPhase.p2:
         final id = _decision.targetId;
-        if (id != null) onMedConfirmed?.call(id, at);
-        break;
-      case MedPhase.gap:
-        onUnknownMed?.call(r.score, at);
+        if (id != null) {
+          _controller.notifyMedTaken(id); // 복용 확정 → 그 약 감시 창 즉시 종료
+          onMedConfirmed?.call(id, at);
+        }
         break;
       case MedPhase.p1:
       case MedPhase.idle:

@@ -46,12 +46,15 @@ class ScheduleScreen extends StatelessWidget {
                     );
                   }
                   final items = snap.data ?? const [];
+                  // 알림: 건너뛴 항목은 제외(리마인더 안 보냄). 목록엔 "건너뜀"으로 표시.
+                  final active =
+                      items.where((i) => !i.skipped).toList();
                   // Keep the daily voice reminders in sync with the live
                   // schedule. syncSchedules no-ops when the set is unchanged.
-                  context.read<NotificationService>().syncSchedules(items);
-                  // Feed the same live schedule to the YAMNet sensing engine
-                  // (running in the foreground-service isolate) so it knows when
-                  // to open meal/medication monitoring windows.
+                  context.read<NotificationService>().syncSchedules(active);
+                  // 감지 엔진엔 건너뛴 항목까지 포함한 "전체" 목록을 넘긴다. 컨트롤러가
+                  // 스킵을 직접 읽어, 스킵된 식사는 감시하지 않되 그에 묶인 식후약은
+                  // 예정시간 시계 창으로 진행시키기 위함(식사 스킵 = "오늘 이 끼니 없음" 신호).
                   context.read<SensingForegroundController>().pushSchedule(items);
                   if (items.isEmpty) return const _Empty();
                   return ListView.separated(
@@ -161,9 +164,26 @@ class _ScheduleTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isMed = item.kind == ScheduleKind.med;
+    // 감지 엔진이 지금 감시 중인 항목 id (P1/P2). "진행중..." 표시에 쓴다.
+    final activeTargetId =
+        context.read<SensingForegroundController>().activeTargetId;
+    // 보호자가 오늘 하루 건너뛴 항목은 회색으로 죽여서 "건너뜀"으로 표시한다.
+    final isSkipped = item.skipped;
     // 보호자/센서팀이 복용·식사 완료를 기록하면 타일 전체를 은은한 파란색으로
     // 칠해 시각적으로 구분한다 (체크 아이콘 대신 색으로 표현).
-    final isDone = item.taken;
+    final isDone = item.taken && !isSkipped;
+
+    final chipBg = isSkipped
+        ? AppColors.fillNeutral
+        : isDone
+            ? AppColors.primary
+            : AppColors.primary08;
+    final chipIcon = isSkipped
+        ? AppColors.labelAlternative
+        : isDone
+            ? Colors.white
+            : AppColors.primary;
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -180,13 +200,13 @@ class _ScheduleTile extends StatelessWidget {
             height: 42,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: isDone ? AppColors.primary : AppColors.primary08,
+              color: chipBg,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               isMed ? Icons.medication_outlined : Icons.restaurant_outlined,
               size: 21,
-              color: isDone ? Colors.white : AppColors.primary,
+              color: chipIcon,
             ),
           ),
           const SizedBox(width: 12),
@@ -195,30 +215,70 @@ class _ScheduleTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(item.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.075,
-                        color: AppColors.labelStrong)),
+                        color: isSkipped
+                            ? AppColors.labelAlternative
+                            : AppColors.labelStrong,
+                        decoration: isSkipped
+                            ? TextDecoration.lineThrough
+                            : null,
+                        decorationColor: AppColors.labelAlternative)),
                 const SizedBox(height: 3),
                 Text(
                   [item.kind.label, if (item.dose != null) item.dose!]
                       .join(' · '),
                   style: AppType.rowSub,
                 ),
+                // 감시 중인 항목이면 "진행중…" 표시 (activeTargetId 변할 때만 갱신).
+                ValueListenableBuilder<String?>(
+                  valueListenable: activeTargetId,
+                  builder: (_, active, _) {
+                    if (active != item.id || isSkipped || isDone) {
+                      return const SizedBox.shrink();
+                    }
+                    return const Padding(
+                      padding: EdgeInsets.only(top: 4),
+                      child: Text('● 진행중…',
+                          style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.06,
+                              color: AppColors.primary)),
+                    );
+                  },
+                ),
               ],
             ),
           ),
-          Text(
-            isDone && item.takenAt != null ? item.takenAt! : item.time,
-            style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: isDone
-                        ? AppColors.primary78
-                        : AppColors.labelStrong)
-                .tabular,
-          ),
+          if (isSkipped)
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.fillNeutral,
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: const Text('건너뜀',
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.06,
+                      color: AppColors.labelNeutral)),
+            )
+          else
+            Text(
+              isDone && item.takenAt != null ? item.takenAt! : item.time,
+              style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: isDone
+                          ? AppColors.primary78
+                          : AppColors.labelStrong)
+                  .tabular,
+            ),
         ],
       ),
     );

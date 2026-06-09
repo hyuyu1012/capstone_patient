@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +22,12 @@ import 'theme/app_theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // 메인 isolate ↔ 감지 서비스 isolate 통신 포트(앱 시작 시 1회).
-  FlutterForegroundTask.initCommunicationPort();
+  // flutter_foreground_task는 android/ios 전용이고 내부적으로 dart:isolate
+  // (ReceivePort/IsolateNameServer)를 쓰는데 웹에선 미지원이라 여기서 던진다.
+  // 웹은 감지 자체가 no-op이므로 통신 포트도 건너뛴다.
+  if (!kIsWeb) {
+    FlutterForegroundTask.initCommunicationPort();
+  }
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final notifications = NotificationService();
   await notifications.init();
@@ -67,9 +73,12 @@ class PatientApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
         // WithForegroundTask keeps the service↔UI communication wired up.
-        home: WithForegroundTask(
-          child: const _ReminderSpeaker(child: AuthGate()),
-        ),
+        // 웹에는 foreground service가 없으므로 그대로 둔다.
+        home: kIsWeb
+            ? const _ReminderSpeaker(child: AuthGate())
+            : WithForegroundTask(
+                child: const _ReminderSpeaker(child: AuthGate()),
+              ),
       ),
     );
   }

@@ -79,34 +79,28 @@ class SwallowDetector {
     _tablesReady = true;
   }
 
-  /// PCM16 바이트 -> float32 변환 후 누적. 패치 차면 추론, 아니면 null.
-  bool? feedPcm16(Uint8List pcmBytes) {
-    final samples = Float32List(pcmBytes.length ~/ 2);
-    for (int i = 0; i < samples.length; i++) {
-      final lo = pcmBytes[i * 2];
-      final hi = pcmBytes[i * 2 + 1];
-      int s16 = (hi << 8) | lo;
-      if (s16 >= 0x8000) s16 -= 0x10000;
-      samples[i] = s16 / 32768.0;
+  /// 추론에 필요한 최소 샘플 수(= 패치 1개 = 한 청크, 15600 ≈ 0.975초).
+  static const int kPatchSamples = kNFft + (kPatchFrames - 1) * kHopLen; // 15600
+
+  /// [2026-06-09 직렬 구조] 오디오를 버퍼에 누적만 한다(추론은 안 함).
+  /// 최근 kPatchSamples(~0.975초)만 롤링 보관해 청크 연속성을 유지한다.
+  /// 실제 추론은 IIR 1차 게이트를 통과했을 때 inferLatest()로만 수행한다.
+  void pushAudio(Float32List samples) {
+    if (!isReady) return;
+    _audioBuffer.addAll(samples);
+    if (_audioBuffer.length > kPatchSamples) {
+      _audioBuffer.removeRange(0, _audioBuffer.length - kPatchSamples);
     }
-    return _feed(samples);
   }
 
-  /// Float32 [-1,1] 샘플 직접 입력 (AudioStreamer.onChunk 연결용).
-  bool? feedFloat32(Float32List samples) => _feed(samples);
-
-  bool? _feed(Float32List samples) {
-    if (!isReady) return null;
-    _audioBuffer.addAll(samples);
-
-    final needed = kNFft + (kPatchFrames - 1) * kHopLen; // 15600
-    if (_audioBuffer.length < needed) return null;
-
-    final waveform = Float32List.fromList(_audioBuffer.sublist(0, needed));
-    _audioBuffer.removeRange(0, kHopLen * (kPatchFrames ~/ 2)); // 50% overlap
-
-    final patch = _computeLogMelPatch(waveform);
-    return _infer(patch);
+  /// 버퍼의 최근 ~0.975초로 logmel 패치를 만들어 CNN 추론한다. lastScore를
+  /// 갱신하고 그 확률을 반환한다. 데이터가 아직 부족하면 추론 없이 0.0 반환.
+  double inferLatest() {
+    if (!isReady || _audioBuffer.length < kPatchSamples) return 0.0;
+    final waveform = Float32List.fromList(
+        _audioBuffer.sublist(_audioBuffer.length - kPatchSamples));
+    _infer(_computeLogMelPatch(waveform)); // lastScore 갱신
+    return lastScore;
   }
 
   List<List<double>> _computeLogMelPatch(Float32List wav) {

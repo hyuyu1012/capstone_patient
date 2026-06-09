@@ -13,6 +13,7 @@
 // 로그아웃 시에만. 화면 전환/백그라운드에서는 서비스를 내리지 않는다.
 // ─────────────────────────────────────────────────────────────
 
+import 'package:flutter/foundation.dart' show kIsWeb, ValueNotifier;
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
 import '../data/schedule_service.dart';
@@ -25,11 +26,16 @@ class SensingForegroundController {
   final ScheduleService _schedules;
   String? _patientId;
 
+  /// 현재 감시(P1/P2) 중인 스케줄 항목 id. idle이면 null. UI가 이 값을 구독해
+  /// 해당 타일에 "진행중..."을 표시한다. (값이 바뀔 때만 리스너에 통지)
+  final ValueNotifier<String?> activeTargetId = ValueNotifier<String?>(null);
+
   /// 감지 결과를 어느 환자 문서에 쓸지 바인딩.
   void bind(String patientId) => _patientId = patientId;
 
   /// 상주 알림 권한 + 배터리 최적화 예외(Doze에서 더 공격적으로 죽지 않도록).
   Future<void> requestPermissions() async {
+    if (kIsWeb) return;
     final perm = await FlutterForegroundTask.checkNotificationPermission();
     if (perm != NotificationPermission.granted) {
       await FlutterForegroundTask.requestNotificationPermission();
@@ -42,6 +48,7 @@ class SensingForegroundController {
   /// 서비스/알림 채널 구성. 알람용 채널(med_reminders/meal_reminders, MAX +
   /// alarm sound)과 분리된 전용 LOW 채널이라 소리/heads-up 충돌이 없다.
   void init() {
+    if (kIsWeb) return;
     FlutterForegroundTask.init(
       androidNotificationOptions: AndroidNotificationOptions(
         channelId: 'sensing_fgs',
@@ -68,6 +75,7 @@ class SensingForegroundController {
 
   /// 서비스 시작(중복 가드 포함). 환자 확정 후 1회 호출.
   Future<void> start() async {
+    if (kIsWeb) return;
     if (await FlutterForegroundTask.isRunningService) return;
     await FlutterForegroundTask.startService(
       serviceId: 2456,
@@ -79,10 +87,14 @@ class SensingForegroundController {
   }
 
   /// 서비스 종료. 로그아웃/환자 해제 시에만.
-  Future<void> stop() => FlutterForegroundTask.stopService();
+  Future<void> stop() async {
+    if (kIsWeb) return;
+    await FlutterForegroundTask.stopService();
+  }
 
   /// Firestore 스케줄을 서비스 isolate로 전달(컨트롤러 setSchedule).
   void pushSchedule(List<ScheduleItem> items) {
+    if (kIsWeb) return;
     FlutterForegroundTask.sendDataToTask({
       'type': 'schedule',
       'items': items.map((i) => i.toMap()).toList(),
@@ -91,8 +103,16 @@ class SensingForegroundController {
 
   /// 서비스 isolate → 메인 메시지 핸들러. 기존 binder의 Firestore 쓰기 로직.
   void onData(Object data) {
+    if (data is! Map) return;
+    // 감시 상태(UI "진행중..." 표시용) — 환자 바인딩과 무관하게 처리.
+    if (data['type'] == 'state') {
+      final phase = data['phase'] as String?;
+      activeTargetId.value =
+          (phase == null || phase == 'idle') ? null : data['targetId'] as String?;
+      return;
+    }
     final pid = _patientId;
-    if (pid == null || data is! Map) return;
+    if (pid == null) return;
     switch (data['type']) {
       case 'medConfirmed':
         _schedules.setTaken(pid, data['id'] as String,

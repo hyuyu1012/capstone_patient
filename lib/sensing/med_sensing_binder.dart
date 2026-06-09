@@ -16,6 +16,7 @@
 // 스케줄 입력(pushSchedule)은 ScheduleScreen의 StreamBuilder에서 직접 넘긴다.
 // ─────────────────────────────────────────────────────────────
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:provider/provider.dart';
@@ -46,6 +47,10 @@ class _MedSensingBinderState extends State<MedSensingBinder> {
     _controller = context.read<SensingForegroundController>()
       ..bind(widget.patientId);
 
+    // 웹에는 foreground service(flutter_foreground_task, android/ios 전용)가
+    // 없으므로 감지 배선을 통째로 건너뛴다. UI/Firebase/스케줄은 정상 동작.
+    if (kIsWeb) return;
+
     // 서비스 isolate가 보내는 감지 결과 → Firestore 쓰기.
     _onData = _controller.onData;
     FlutterForegroundTask.addTaskDataCallback(_onData);
@@ -62,7 +67,9 @@ class _MedSensingBinderState extends State<MedSensingBinder> {
   @override
   void dispose() {
     // 콜백만 해제. 서비스는 상시 유지(로그아웃 시 schedule_screen에서 stop).
-    FlutterForegroundTask.removeTaskDataCallback(_onData);
+    if (!kIsWeb) {
+      FlutterForegroundTask.removeTaskDataCallback(_onData);
+    }
     super.dispose();
   }
 

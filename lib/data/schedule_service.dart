@@ -55,12 +55,13 @@ class ScheduleService {
         );
   }
 
-  /// 어느 약인지 미정(gap 트리거): pendingMeds 큐에 적재 → 추후 보호자/Gemini 확인.
+  /// 어느 약인지 미정인 복약: pendingMeds 큐에 적재 → 추후 보호자/Gemini 확인.
+  /// [2026-06-09] gap(공백기) 제거 후 현재 호출자가 없다(휴면 — 배선만 유지).
   Future<void> addPendingMed(
     String patientId, {
     required String takenAt,
     int? score,
-    String detectedBy = 'sensor_gap',
+    String detectedBy = 'sensor_unknown',
   }) {
     return _db
         .collection('patients')

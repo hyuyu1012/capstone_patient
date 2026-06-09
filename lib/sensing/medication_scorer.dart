@@ -57,15 +57,13 @@ enum MedBlockReason { none, foodConflict, dishwashing, invalidSequence, sessionE
 ///   idle : 감시 비활성. 점수만 계산, 트리거 없음.
 ///   p1   : 식사지도(P1) 진행 중. 점수는 매기되 복약 트리거는 발생시키지 않는다(무시).
 ///          식사 중 발생하는 삼킴/물소리는 복약으로 보지 않는다.
-///   gap  : P1 종료 ~ P2 시작 사이 공백기. 이 구간 감지는 어느 약인지 특정할 수
-///          없으므로 unknown으로 트리거 → Gemini가 "약 드셨어요?(어떤 약?)" 재확인.
 ///   p2   : 복약지도(P2, 식전/식후 모드) 진행 중. 트리거되면 그 모드가 들고 있는
 ///          대상 약으로 확정 처리한다(식전약을 늦게 먹었어도 식후모드면 식후약으로).
 ///          foodConflict·설거지 차단을 모두 적용.
 ///
 /// [참고] 복약 감시를 "별도 프로그램"으로 분리하지 않는다. 감시는 하나의 연속된
-/// 프로세스이고, P1/gap/P2는 그 위에 얹힌 단계 구분일 뿐이다.
-enum MedPhase { idle, p1, gap, p2 }
+/// 프로세스이고, P1/P2는 그 위에 얹힌 단계 구분일 뿐이다.
+enum MedPhase { idle, p1, p2 }
 
 /// 트리거 발동 시 콜백에 전달되는 결과 객체.
 class MedTriggerResult {
@@ -304,11 +302,10 @@ class MedicationScorer {
   // 단계(phase) 제어
   // main.dart의 P1/P2 흐름에서 호출한다.
   //   - P1 시작(식사 감지 시작) 시          : setPhase(MedPhase.p1)
-  //   - P1 종료 후 P2 시작 전 공백기         : setPhase(MedPhase.gap)
   //   - P2(식전/식후 모드) 시작 시           : setPhase(MedPhase.p2)
   //   - 모든 창이 닫히면                     : setPhase(MedPhase.idle)
-  // 단계가 바뀌어도 누적 점수/로그는 유지된다(감시는 연속). 트리거 가능 여부와
-  // 트리거 결과의 의미(p2=확정 / gap=unknown)만 단계에 따라 달라진다.
+  // 단계가 바뀌어도 누적 점수/로그는 유지된다(감시는 연속). 트리거 가능 여부만
+  // 단계에 따라 달라진다(p2에서만 확정 트리거).
   // ─────────────────────────────────────────────────────────
   void setPhase(MedPhase phase) {
     _phase = phase;
@@ -558,14 +555,11 @@ class MedicationScorer {
   //   idle : 점수만 계산, 트리거 없음.
   //   p1   : 식사 중. 약을 먹어도 복약으로 보지 않는다 → 점수가 차도 트리거 안 함(무시).
   //          식사 소음(삼킴/물소리)과 복약을 구분할 수 없기 때문.
-  //   gap  : P1 종료~P2 시작 공백기. 트리거하되 어느 약인지 특정 불가 → Gemini가
-  //          재확인(main에서 unknown 처리). foodConflict/설거지 차단은 적용한다
-  //          (공백기에도 설거지·잔여 식사 오탐 가능성이 있으므로).
   //   p2   : 복약 창. foodConflict·설거지 차단 적용. 80점 이상이면 트리거 →
   //          그 모드의 약으로 확정 처리(main).
   //
-  // 자동확정(autoConfirmed)은 제거되었다. 트리거는 항상 geminiVerify로 통일하고,
-  // gap/p2 구분은 result.phase로 main에 전달한다(Gemini가 최종 안전망).
+  // 자동확정(autoConfirmed)은 제거되었다. 트리거는 항상 geminiVerify로 통일한다
+  // (Gemini가 최종 안전망).
   // ─────────────────────────────────────────────────────────
   void _evaluate(DateTime now) {
     // idle·p1은 트리거하지 않는다.
@@ -578,7 +572,7 @@ class MedicationScorer {
     final score = _computeScore();
     final orderValid = _isExpectedOrder();
 
-    // ── 차단 정책 (gap·p2) ──
+    // ── 차단 정책 (p2) ──
     // 식사 중(p1)이 아닌, 복약을 노리는 구간이므로 식사/설거지 오탐을 차단한다.
     if (hasFoodConflict) {
       lastBlockedReason = MedBlockReason.foodConflict;
@@ -590,7 +584,7 @@ class MedicationScorer {
     }
 
     // ── 트리거: 80점 이상이면 Gemini 검증 (단계 정보 포함) ──
-    // result.phase가 gap이면 main에서 unknown으로, p2면 해당 모드 약으로 처리.
+    // 여기 도달하는 단계는 p2뿐 → main에서 해당 모드 약으로 처리.
     final reachesGemini = score >= kGeminiVerifyThreshold;
     if (reachesGemini && !_geminiTriggered) {
       _geminiTriggered = true;

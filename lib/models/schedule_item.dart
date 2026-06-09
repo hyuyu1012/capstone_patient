@@ -13,11 +13,11 @@ enum ScheduleKind {
 
 /// How a medication relates to meals. Drives *when* the sensor opens the P2
 /// (medication) monitoring window:
-///   - [after]  : triggered by *detected meal completion* (M_chew stops ~3min),
-///                with the scheduled [ScheduleItem.time] as a clock fallback.
-///   - [before] : window opens ahead of the meal's scheduled time.
+///   - [after]  : triggered by *detected meal completion* (M_chew stops ~3min);
+///                if the meal is never detected, no window opens (no fallback).
+///   - [before] : clock-based window at the medication's scheduled [time].
 ///   - [none]   : meal-independent → pure clock-based window at [time]
-///                (skips the P1/gap meal phases entirely).
+///                (skips the P1 meal phase entirely).
 /// Only meaningful for [ScheduleKind.med]; meal rows are always [none].
 enum MealRelation {
   before, // 식전
@@ -49,7 +49,9 @@ class ScheduleItem {
     this.dose,
     this.taken = false,
     this.takenAt,
+    this.skipped = false,
     this.mealRelation = MealRelation.none,
+    this.mealId,
   });
 
   final String id;
@@ -59,7 +61,15 @@ class ScheduleItem {
   final String time; // "HH:mm" scheduled time
   final bool taken;
   final String? takenAt; // "HH:mm" completion time
+
+  /// 보호자가 오늘 하루 의도적으로 건너뛴 항목. 완료(taken)와 상호 배타적이며,
+  /// 건너뛴 일정은 "건너뜀"으로 표시한다 (보호자 앱이 이 필드를 쓴다).
+  final bool skipped;
   final MealRelation mealRelation; // med only — 식전/식후/식사무관
+
+  /// 식후약(after)이 연결된 식사의 스케줄 id. 보호자 앱이 등록 시 기록한다.
+  /// 있으면 식사 연결을 시간추정 대신 이 id로 정확히 한다(없으면 시간추정 폴백).
+  final String? mealId;
 
   /// Minutes since midnight for the scheduled [time] — handy for the 24h ring.
   int get scheduledMinutes => _toMinutes(time);
@@ -75,8 +85,10 @@ class ScheduleItem {
   ScheduleItem copyWith({
     bool? taken,
     String? takenAt,
+    bool? skipped,
     bool clearTakenAt = false,
     MealRelation? mealRelation,
+    String? mealId,
   }) {
     return ScheduleItem(
       id: id,
@@ -86,7 +98,9 @@ class ScheduleItem {
       time: time,
       taken: taken ?? this.taken,
       takenAt: clearTakenAt ? null : (takenAt ?? this.takenAt),
+      skipped: skipped ?? this.skipped,
       mealRelation: mealRelation ?? this.mealRelation,
+      mealId: mealId ?? this.mealId,
     );
   }
 
@@ -98,7 +112,9 @@ class ScheduleItem {
         time: map['time'] as String,
         taken: map['taken'] as bool? ?? false,
         takenAt: map['takenAt'] as String?,
+        skipped: map['skipped'] as bool? ?? false,
         mealRelation: MealRelation.fromName(map['mealRelation'] as String?),
+        mealId: map['mealId'] as String?,
       );
 
   Map<String, dynamic> toMap() => {
@@ -109,6 +125,8 @@ class ScheduleItem {
         'time': time,
         'taken': taken,
         'takenAt': takenAt,
+        'skipped': skipped,
         'mealRelation': mealRelation.name,
+        'mealId': mealId,
       };
 }

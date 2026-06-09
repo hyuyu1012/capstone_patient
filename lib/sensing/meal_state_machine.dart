@@ -21,8 +21,8 @@ import 'med_result_writer.dart' show MealStatus;
 
 class MealStateMachine {
   /// 식사로 인정하기까지 필요한 최소 M_chew 횟수(스파이크성 단발 오탐 방지).
-  /// YAMNet의 chewingRequiredFrames(3)와 같은 취지.
-  static const int kMinChews = 3;
+  /// [2026-06-09] 04 스펙: "씹기 4번 감지되면 (식사) 감지로 판정" → 3→4.
+  static const int kMinChews = 4;
 
   /// 식사 중 상태에서 이 시간만큼 씹기가 없으면 식사 완료로 본다.
   static const Duration kSilenceToEaten = Duration(minutes: 3);

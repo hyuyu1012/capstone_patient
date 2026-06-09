@@ -38,11 +38,12 @@ enum MealStatus { notEaten, inProgress, eaten }
 ///   notTaken  : 아직 복약이 확인되지 않음 (초기/미복용).
 ///   detected  : [내부 전용 — 외부/UI로 내보내지 않음]
 ///               센서 점수가 임계값을 넘어 "감지됨" 상태를 나타내는 정호님 모듈
-///               내부 개념. 외부 전달은 p2면 곧장 confirmed, gap이면 unknown으로
-///               변환하므로 이 값이 Firestore/UI로 나가는 일은 없다. (2026-06-04)
-///   unknown   : 약을 먹은 정황은 있으나 "어느 약인지 센서가 확정 못 함".
-///               P1 종료~P2 시작 공백기(gap) 감지가 여기 해당. → Gemini로 넘겨
-///               "어떤 약 드셨어요?" 재확인. (식전/식후 동시 등록 시 단정 불가)
+///               내부 개념. 외부 전달은 p2면 곧장 confirmed로 변환하므로 이 값이
+///               Firestore/UI로 나가는 일은 없다. (2026-06-04)
+///   unknown   : 약을 먹은 정황은 있으나 "어느 약인지 센서가 확정 못 함" → Gemini로
+///               넘겨 "어떤 약 드셨어요?" 재확인. (식전/식후 동시 등록 시 단정 불가)
+///               [2026-06-09] gap(공백기) 제거로 현재 이 상태를 만드는 경로는
+///               없다(pendingMeds 배선은 유지하되 휴면).
 ///   confirmed : 복용 확정. P2 창에서 감지되면 그 모드의 약으로 확정하거나,
 ///               Gemini/보호자 확인으로 확정된 상태. UI의 taken=true 와 매핑.
 ///   missed    : 복약 창이 끝날 때까지 확정되지 않음 → 보호자 알림 대상.
@@ -121,9 +122,11 @@ class MedResultWriter {
 
   /// "어느 약인지 모르는" 복약 감지 이벤트 (unknown).
   ///
-  /// P1 진행 중 감지, 공백기 감지, 스케줄 시간과 안 맞는 감지가 모두 여기 해당.
+  /// 스케줄 시간과 안 맞는 감지 등 어느 약인지 특정 못 하는 경우가 여기 해당.
   /// scheduleId에 직접 쓰지 않고, 별도 컬렉션(예: patients/{id}/pendingMeds)에
   /// 쌓아 두면 Gemini/보호자가 나중에 어느 약인지 확정한다.
+  ///
+  /// [2026-06-09] gap(공백기) 제거 후 현재 이 헬퍼를 호출하는 경로는 없다(휴면).
   ///
   /// 통합 담당자는 이 맵을 pendingMeds 같은 큐 컬렉션에 add 하면 된다:
   ///   await FirebaseFirestore.instance
@@ -131,7 +134,7 @@ class MedResultWriter {
   ///       .collection('pendingMeds').add(MedResultWriter.toUnknownEvent(...));
   ///
   /// - [takenAt]   : 감지 시각 "HH:mm".
-  /// - [detectedBy]: 'sensor_p1'(식사 중) / 'sensor_gap'(공백기) 등 출처.
+  /// - [detectedBy]: 'sensor_p1'(식사 중) 등 출처.
   /// - [score]     : 감지 당시 점수(디버그/신뢰도 참고용).
   static Map<String, dynamic> toUnknownEvent({
     String? takenAt,

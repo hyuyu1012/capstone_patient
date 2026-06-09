@@ -62,6 +62,7 @@ class SensingTaskHandler extends TaskHandler {
         FlutterForegroundTask.sendDataToMain({
           'type': 'state',
           'phase': s.phase.name,
+          'targetId': s.targetId, // "진행중..." 표시 대상 항목
           'listening': s.listening,
           'score': s.score,
           'reason': s.reason,
