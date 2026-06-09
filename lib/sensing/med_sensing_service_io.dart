@@ -34,7 +34,8 @@ import 'yamnet_classifier.dart';
 
 class MedSensingService {
   // ── YAMNet main.dart 튜닝 상수 (그대로 이식) ──
-  static const double chewingThreshold = 0.45;
+  // [2026-06-09] 식사(씹기) 인식이 잘 안 돼 0.45 → 0.3으로 완화.
+  static const double chewingThreshold = 0.3;
   static const double kCnnSwallowThreshold = 0.30;
 
   /// p2 트리거 → 그 약을 복용으로 확정. (scheduleId, 확정 시각)

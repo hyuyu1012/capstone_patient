@@ -15,6 +15,7 @@
 
 import 'package:flutter/foundation.dart' show kIsWeb, ValueNotifier;
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../data/schedule_service.dart';
 import '../models/schedule_item.dart';
@@ -33,13 +34,24 @@ class SensingForegroundController {
   /// 감지 결과를 어느 환자 문서에 쓸지 바인딩.
   void bind(String patientId) => _patientId = patientId;
 
-  /// 상주 알림 권한 + 배터리 최적화 예외(Doze에서 더 공격적으로 죽지 않도록).
+  /// 마이크 권한 + 상주 알림 권한 + 배터리 최적화 예외(Doze에서 덜 공격적으로 죽도록).
+  ///
+  /// 마이크(RECORD_AUDIO)는 반드시 **메인(UI) isolate에서 먼저** 요청한다. 안드로이드
+  /// 런타임 권한 다이얼로그는 포그라운드 Activity에서만 정상적으로 뜨므로, 서비스
+  /// isolate(_ensureMicPermission)에 맡기면 다이얼로그가 안 떠 조용히 거부될 수 있다.
+  /// 여기서 미리 받아두면 서비스 isolate의 요청은 이미 granted라 즉시 통과한다.
   Future<void> requestPermissions() async {
     if (kIsWeb) return;
+    // 1) 마이크 — 감지의 핵심. 메인 isolate에서 다이얼로그를 띄워 받는다.
+    if (!await Permission.microphone.isGranted) {
+      await Permission.microphone.request();
+    }
+    // 2) 상주 알림
     final perm = await FlutterForegroundTask.checkNotificationPermission();
     if (perm != NotificationPermission.granted) {
       await FlutterForegroundTask.requestNotificationPermission();
     }
+    // 3) 배터리 최적화 예외
     if (!await FlutterForegroundTask.isIgnoringBatteryOptimizations) {
       await FlutterForegroundTask.requestIgnoreBatteryOptimization();
     }

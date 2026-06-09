@@ -30,7 +30,7 @@
 ///   inProgress : P1 진행 중. M_chew가 지속 감지되어 식사 중으로 판단된 상태.
 ///                ※ 지금은 Firestore에 직접 쓰지 않더라도, 실시간 UI 표시
 ///                  (예: 환자앱 "식사 중...") 용도로 남겨둔다. (정호님 요청)
-///   eaten      : 식사 완료. M_chew 마지막 후 3분 무음 → P1 정상 종료 시.
+///   eaten      : 식사 완료. M_chew 마지막 후 kSilenceToEaten(테스트: 30초) 무음 → P1 정상 종료 시.
 enum MealStatus { notEaten, inProgress, eaten }
 
 /// 복약 상태.

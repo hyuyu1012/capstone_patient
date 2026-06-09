@@ -8,7 +8,7 @@
 // 규칙 (med_result_writer.dart의 MealStatus 정의를 따름):
 //   notEaten   : 초기/씹기 부족.
 //   inProgress : 씹기가 충분히(kMinChews) 감지됨 → 식사 중.
-//   eaten      : 식사 중이던 상태에서 마지막 씹기 후 kSilenceToEaten(3분) 무음.
+//   eaten      : 식사 중이던 상태에서 마지막 씹기 후 kSilenceToEaten(테스트: 30초) 무음.
 //                또는 P1 창이 닫힐 때 식사 중이었으면 마무리로 eaten 처리.
 //
 // 순수 Dart — 시각을 인자로 받아 단위 테스트가 가능하다(컨트롤러와 동일 방침).
@@ -25,7 +25,8 @@ class MealStateMachine {
   static const int kMinChews = 4;
 
   /// 식사 중 상태에서 이 시간만큼 씹기가 없으면 식사 완료로 본다.
-  static const Duration kSilenceToEaten = Duration(minutes: 3);
+  /// [테스트, 2026-06-09] AI 데모용으로 3분 → 30초 단축. (원복: Duration(minutes: 3))
+  static const Duration kSilenceToEaten = Duration(seconds: 30);
 
   MealStatus _status = MealStatus.notEaten;
   int _chewCount = 0;

@@ -25,19 +25,19 @@ void main() {
       expect(m.status, MealStatus.inProgress);
     });
 
-    test('마지막 씹기 후 3분 무음 → eaten (tick true 한 번만)', () {
+    test('마지막 씹기 후 30초 무음 → eaten (tick true 한 번만)', () {
       final m = MealStateMachine();
       for (var i = 0; i < 4; i++) {
-        m.onChew(_at(8, 0, i));
+        m.onChew(_at(8, 0, i)); // 마지막 씹기 08:00:03
       }
-      // 2분 경과: 아직 식사 중
-      expect(m.tick(_at(8, 2, 2)), isFalse);
+      // 20초 경과: 아직 식사 중
+      expect(m.tick(_at(8, 0, 23)), isFalse);
       expect(m.status, MealStatus.inProgress);
-      // 3분 경과: 완료
-      expect(m.tick(_at(8, 3, 3)), isTrue);
+      // 마지막 씹기 후 30초 경과: 완료
+      expect(m.tick(_at(8, 0, 35)), isTrue);
       expect(m.status, MealStatus.eaten);
       // 다시 tick해도 중복 발사 없음
-      expect(m.tick(_at(8, 4, 0)), isFalse);
+      expect(m.tick(_at(8, 1, 0)), isFalse);
     });
 
     test('eaten 후 추가 씹기는 무시 (재시작 안 함)', () {
