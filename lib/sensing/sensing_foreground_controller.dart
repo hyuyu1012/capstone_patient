@@ -89,6 +89,15 @@ class SensingForegroundController {
   Future<void> start() async {
     if (kIsWeb) return;
     if (await FlutterForegroundTask.isRunningService) return;
+    // 마이크 타입 FGS(Android 14+/SDK36)는 시작 시점에 RECORD_AUDIO가 granted여야 한다.
+    // 없으면 startForeground가 SecurityException을 던져 서비스가 5초마다 재시작
+    // 루프에 빠진다(실기기 로그에서 확인). 권한을 보장하고, 끝내 없으면 시작하지 않는다.
+    if (!await Permission.microphone.isGranted) {
+      await Permission.microphone.request();
+    }
+    if (!await Permission.microphone.isGranted) {
+      return; // 마이크 거부 → 마이크 FGS 시작 안 함(크래시 루프 방지)
+    }
     await FlutterForegroundTask.startService(
       serviceId: 2456,
       serviceTypes: const [ForegroundServiceTypes.microphone],
